@@ -39,10 +39,18 @@ const textureLoader = new THREE.TextureLoader();
 // Geometry
 const geometry = new THREE.PlaneGeometry(1, 1, 32, 32);
 
+const verticeCount = geometry.attributes.position.count;
+const randoms = new Float32Array(verticeCount);
+for (let i = 0; i < verticeCount; i++) {
+  randoms[i] = Math.random();
+}
+geometry.setAttribute("aRandom", new THREE.BufferAttribute(randoms, 1));
+
 // Material
 const material = new THREE.RawShaderMaterial({
   vertexShader,
   fragmentShader,
+  transparent: true,
 });
 // flatShading, side, transparent and wireframe are still working
 
