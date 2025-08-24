@@ -1,14 +1,7 @@
-import * as THREE from "three";
-import GUI from "lil-gui";
-
-const gui = new GUI();
-gui.hide();
-const canvas = document.querySelector<HTMLCanvasElement>("#webgl");
-if (!canvas) {
-  throw new Error("Canvas element not found");
+function launch(file: string) {
+  import(`./shaders/${file}/${file}.ts`).then((module) => {
+    module.default();
+  });
 }
 
-/**
- * Scene
- */
-const scene = new THREE.Scene();
+launch("shader");
