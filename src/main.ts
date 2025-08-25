@@ -4,4 +4,4 @@ function launch(file: string) {
   });
 }
 
-launch("shader");
+launch("patterns");
