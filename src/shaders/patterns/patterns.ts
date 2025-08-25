@@ -102,4 +102,4 @@ const tick = () => {
   window.requestAnimationFrame(tick);
 };
 
-tick();
+export default tick;
