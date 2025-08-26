@@ -1,9 +1,5 @@
+float angle = position.y + uTime;
+mat2 rotateMatrix = get2dRotationMatrix(angle);
 
-
-void main()
-{
-    vec4 modelPosition = modelMatrix * vec4(position, 1.0);
-    vec4 viewPosition = viewMatrix * modelPosition;
-    vec4 projectedPosition = projectionMatrix * viewPosition;
-    gl_Position = projectedPosition;
-}
+// rotate every vertices
+transformed.xz += transformed.xz * rotateMatrix;
