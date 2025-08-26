@@ -4,4 +4,4 @@ function launch(file: string) {
   });
 }
 
-launch("raging_sea");
+launch("animated_galaxy");
