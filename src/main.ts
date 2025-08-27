@@ -4,4 +4,4 @@ function launch(file: string) {
   });
 }
 
-launch("hologram");
+launch("fireworks");
