@@ -4,4 +4,4 @@ function launch(file: string) {
   });
 }
 
-launch("coffee_smoke");
+launch("hologram");
