@@ -12,7 +12,9 @@ import fragmentShader from "./fragment.glsl";
  */
 // Debug
 const gui = new GUI({ width: 340 });
-const debugObject = {};
+const materialParameters = {
+  color: "#70c1ff",
+};
 // Scene
 const scene = new THREE.Scene();
 
@@ -80,7 +82,18 @@ gui.addColor(rendererParameters, "clearColor").onChange(() => {
 /**
  * Material
  */
-const material = new THREE.MeshBasicMaterial();
+const material = new THREE.ShaderMaterial({
+  vertexShader: vertexShader,
+  fragmentShader: fragmentShader,
+  transparent: true,
+  depthWrite: false,
+  blending: THREE.AdditiveBlending,
+  side: THREE.DoubleSide,
+  uniforms: {
+    uColor: new THREE.Uniform(new THREE.Color(materialParameters.color)),
+    uTime: new THREE.Uniform(0),
+  },
+});
 
 /**
  * Objects
@@ -109,6 +122,10 @@ gltfLoader.load("/hologram/suzanne.glb", (gltf) => {
   scene.add(suzanne);
 });
 
+gui.addColor(materialParameters, "color").onChange(() => {
+  material.uniforms.uColor.value.set(materialParameters.color);
+});
+
 /**
  * Animate
  */
@@ -128,6 +145,9 @@ const tick = () => {
 
   torusKnot.rotation.x = -elapsedTime * 0.1;
   torusKnot.rotation.y = elapsedTime * 0.2;
+
+  // Update material
+  material.uniforms.uTime.value = elapsedTime;
 
   // Update controls
   controls.update();
