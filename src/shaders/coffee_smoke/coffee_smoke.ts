@@ -76,18 +76,37 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
  * Model
  */
 gltfLoader.load("/coffee_smoke/bakedModel.glb", (gltf) => {
-  const baked = gltf.scene.getObjectByName("baked") as unknown as THREE.Mesh;
-  if (baked && baked.isMesh) {
-    // Handle single or multi-material cases and guard map presence
-    const mats = Array.isArray(baked.material)
-      ? baked.material
-      : [baked.material];
-    for (const m of mats) {
-      const tex = (m as any).map as THREE.Texture | undefined;
-      if (tex) tex.anisotropy = 8;
-    }
+  const bakedObject = gltf.scene.getObjectByName("baked");
+  if (bakedObject) {
+    (bakedObject as any).material.map.anisotropy = 8;
   }
+  scene.add(gltf.scene);
 });
+
+/**
+ * Smoke
+ */
+const smokeGeometry = new THREE.PlaneGeometry(1, 1, 16, 64);
+smokeGeometry.translate(0, 0.5, 0);
+smokeGeometry.scale(1.5, 6, 1.5);
+// Perlin texture
+const perlinTexture = textureLoader.load("/coffee_smoke/perlin.png");
+perlinTexture.wrapS = THREE.RepeatWrapping;
+perlinTexture.wrapT = THREE.RepeatWrapping;
+const smokeMaterial = new THREE.ShaderMaterial({
+  transparent: true,
+  depthWrite: false,
+  uniforms: {
+    uTime: new THREE.Uniform(0),
+    uPerlinTexture: new THREE.Uniform(perlinTexture),
+  },
+  vertexShader,
+  side: THREE.DoubleSide,
+  fragmentShader,
+});
+const smoke = new THREE.Mesh(smokeGeometry, smokeMaterial);
+smoke.position.y = 1.83;
+scene.add(smoke);
 
 /**
  * Animate
@@ -96,6 +115,9 @@ const clock = new THREE.Clock();
 
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
+
+  // Smoke
+  smokeMaterial.uniforms.uTime.value = elapsedTime;
 
   // Update controls
   controls.update();
