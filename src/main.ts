@@ -4,4 +4,4 @@ function launch(file: string) {
   });
 }
 
-launch("fireworks");
+launch("light_shaders");

@@ -112,7 +112,7 @@ scene.add(sphere);
 
 // Suzanne
 let suzanne: THREE.Group;
-gltfLoader.load("/light_shaders/suzanne.glb", (gltf) => {
+gltfLoader.load("/suzanne.glb", (gltf) => {
   suzanne = gltf.scene;
   suzanne.traverse((child) => {
     const meshChild = child as THREE.Mesh;
@@ -121,6 +121,33 @@ gltfLoader.load("/light_shaders/suzanne.glb", (gltf) => {
   scene.add(suzanne);
 });
 
+/**
+ * Light helpers
+ */
+const directionalLightHelper = new THREE.Mesh(
+  new THREE.PlaneGeometry(),
+  new THREE.MeshBasicMaterial()
+);
+directionalLightHelper.material.color.setRGB(0.1, 0.1, 1);
+directionalLightHelper.material.side = THREE.DoubleSide;
+directionalLightHelper.position.set(0, 0, 3);
+scene.add(directionalLightHelper);
+
+const pointLightHelper = new THREE.Mesh(
+  new THREE.IcosahedronGeometry(0.1, 2),
+  new THREE.MeshBasicMaterial()
+);
+pointLightHelper.material.color.setRGB(1, 0.1, 0.1);
+pointLightHelper.position.set(0, 2.5, 0);
+scene.add(pointLightHelper);
+
+const pointLightHelper2 = new THREE.Mesh(
+  new THREE.IcosahedronGeometry(0.1, 2),
+  new THREE.MeshBasicMaterial()
+);
+pointLightHelper2.material.color.setRGB(0.1, 1.0, 0.5);
+pointLightHelper2.position.set(2, 2, 2);
+scene.add(pointLightHelper2);
 /**
  * Animate
  */
