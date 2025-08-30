@@ -1,4 +1,4 @@
-class Canvas {
+export class Canvas {
   private _canvas;
   constructor(selector: string) {
     const canvas = document.querySelector<HTMLCanvasElement>(selector);
