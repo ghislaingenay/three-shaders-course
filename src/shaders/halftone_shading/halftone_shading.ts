@@ -29,13 +29,22 @@ const sizes = {
   width: window.innerWidth,
   height: window.innerHeight,
   pixelRatio: Math.min(window.devicePixelRatio, 2),
+  resolution: new THREE.Vector2(window.innerWidth, window.innerHeight),
 };
+sizes.resolution = new THREE.Vector2(
+  sizes.width * sizes.pixelRatio,
+  sizes.height * sizes.pixelRatio
+);
 
 window.addEventListener("resize", () => {
   // Update sizes
   sizes.width = window.innerWidth;
   sizes.height = window.innerHeight;
   sizes.pixelRatio = Math.min(window.devicePixelRatio, 2);
+  sizes.resolution.set(
+    sizes.width * sizes.pixelRatio,
+    sizes.height * sizes.pixelRatio
+  );
 
   // Update camera
   camera.aspect = sizes.width / sizes.height;
@@ -56,6 +65,7 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   100
 );
+
 camera.position.x = 7;
 camera.position.y = 7;
 camera.position.z = 7;
@@ -85,22 +95,57 @@ gui.addColor(rendererParameters, "clearColor").onChange(() => {
 /**
  * Material
  */
-const materialParameters = { color: "#ff794d", shadeColor: "#22001a" };
+const materialParameters = {
+  color: "#ff794d",
+  pointColor: "#22001a",
+};
 
 const material = new THREE.ShaderMaterial({
   vertexShader: halftoneVertexShader,
   fragmentShader: halftoneFragmentShader,
   uniforms: {
     uColor: new THREE.Uniform(new THREE.Color(materialParameters.color)),
-    uShadeColor: new THREE.Uniform(
-      new THREE.Color(materialParameters.shadeColor)
+    uPointColor: new THREE.Uniform(
+      new THREE.Color(materialParameters.pointColor)
     ),
+    uShadowRepetition: new THREE.Uniform(50.0),
+    uResolution: new THREE.Uniform(sizes.resolution),
+    uLow: new THREE.Uniform(-0.8),
+    uHigh: new THREE.Uniform(1.5),
+    uAlphaPoint: new THREE.Uniform(0.5),
+    uHalfToneDirection: new THREE.Uniform(new THREE.Vector3(0.0, -1.0, 0.0)),
   },
 });
 
 gui.addColor(materialParameters, "color").onChange(() => {
   material.uniforms.uColor.value.set(materialParameters.color);
 });
+
+gui.addColor(materialParameters, "pointColor").onChange(() => {
+  material.uniforms.uPointColor.value.set(materialParameters.pointColor);
+});
+
+gui
+  .add(material.uniforms.uAlphaPoint, "value", 0.0, 1.0, 0.01)
+  .name("alpha point");
+
+gui
+  .add(material.uniforms.uShadowRepetition, "value", 1.0, 100.0, 1.0)
+  .name("grid repetition");
+
+gui.add(material.uniforms.uLow, "value", -1.0, 1.0, 0.01).name("low");
+
+gui.add(material.uniforms.uHigh, "value", -1.0, 2.0, 0.01).name("high");
+
+gui
+  .add(material.uniforms.uHalfToneDirection.value, "x", -1.0, 1.0, 0.01)
+  .name("half-tone direction x");
+gui
+  .add(material.uniforms.uHalfToneDirection.value, "y", -1.0, 1.0, 0.01)
+  .name("half-tone direction y");
+gui
+  .add(material.uniforms.uHalfToneDirection.value, "z", -1.0, 1.0, 0.01)
+  .name("half-tone direction z");
 
 /**
  * Objects
@@ -148,6 +193,9 @@ const tick = () => {
 
   torusKnot.rotation.x = -elapsedTime * 0.1;
   torusKnot.rotation.y = elapsedTime * 0.2;
+
+  // Update materials => update .value
+  material.uniforms.uResolution.value = sizes.resolution;
 
   // Update controls
   controls.update();
