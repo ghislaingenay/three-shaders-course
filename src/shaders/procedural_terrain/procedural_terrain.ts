@@ -1,37 +1,27 @@
-import GUI from "lil-gui";
-import canvas from "../../utils/canvas";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-
-import vertexShader from "./vertex.glsl";
-import fragmentShader from "./fragment.glsl";
-import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
-import { RGBELoader } from "three/examples/jsm/Addons.js";
+import canvas from "../../utils/canvas";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
+import GUI from "lil-gui";
 
 /**
  * Base
  */
+
 // Debug
 const gui = new GUI({ width: 325 });
 const debugObject = {};
-
-// Canvas
 
 // Scene
 const scene = new THREE.Scene();
 
 // Loaders
 const rgbeLoader = new RGBELoader();
-const dracoLoader = new DRACOLoader();
-dracoLoader.setDecoderPath("./draco/");
-const gltfLoader = new GLTFLoader();
-gltfLoader.setDRACOLoader(dracoLoader);
 
 /**
  * Environment map
  */
-rgbeLoader.load("./aerodynamics_workshop.hdr", (environmentMap) => {
+rgbeLoader.load("/spruit_sunrise.hdr", (environmentMap) => {
   environmentMap.mapping = THREE.EquirectangularReflectionMapping;
 
   scene.background = environmentMap;
@@ -40,47 +30,23 @@ rgbeLoader.load("./aerodynamics_workshop.hdr", (environmentMap) => {
 });
 
 /**
- * Sliced model
+ * Placeholder
  */
-// Geometry
-const geometry = new THREE.IcosahedronGeometry(2.5, 5);
-
-// Material
-const material = new THREE.MeshStandardMaterial({
-  metalness: 0.5,
-  roughness: 0.25,
-  envMapIntensity: 0.5,
-  color: "#858080",
-});
-
-// Mesh
-const mesh = new THREE.Mesh(geometry, material);
-scene.add(mesh);
-
-/**
- * Plane
- */
-const plane = new THREE.Mesh(
-  new THREE.PlaneGeometry(10, 10, 10),
-  new THREE.MeshStandardMaterial({ color: "#aaaaaa" })
+const placeholder = new THREE.Mesh(
+  new THREE.IcosahedronGeometry(2, 5),
+  new THREE.MeshPhysicalMaterial()
 );
-plane.receiveShadow = true;
-plane.position.x = -4;
-plane.position.y = -3;
-plane.position.z = -4;
-plane.lookAt(new THREE.Vector3(0, 0, 0));
-scene.add(plane);
+scene.add(placeholder);
 
 /**
  * Lights
  */
-const directionalLight = new THREE.DirectionalLight("#ffffff", 4);
+const directionalLight = new THREE.DirectionalLight("#ffffff", 2);
 directionalLight.position.set(6.25, 3, 4);
 directionalLight.castShadow = true;
 directionalLight.shadow.mapSize.set(1024, 1024);
 directionalLight.shadow.camera.near = 0.1;
 directionalLight.shadow.camera.far = 30;
-directionalLight.shadow.normalBias = 0.05;
 directionalLight.shadow.camera.top = 8;
 directionalLight.shadow.camera.right = 8;
 directionalLight.shadow.camera.bottom = -8;
@@ -121,7 +87,7 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   100
 );
-camera.position.set(-5, 5, 12);
+camera.position.set(-10, 6, -2);
 scene.add(camera);
 
 // Controls
