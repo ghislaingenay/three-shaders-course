@@ -4,4 +4,4 @@ function launch(file: string) {
   });
 }
 
-launch("halftone_shading");
+launch("earth");

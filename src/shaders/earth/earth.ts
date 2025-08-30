@@ -21,12 +21,25 @@ const scene = new THREE.Scene();
 /**
  * Earth
  */
+// Textures
+const earthDayTexture = textureLoader.load("/earth/earth/day.jpg");
+earthDayTexture.colorSpace = THREE.SRGBColorSpace;
+const earthNightTexture = textureLoader.load("/earth/earth/night.jpg");
+earthNightTexture.colorSpace = THREE.SRGBColorSpace;
+
+const earthSpecularCloudsTexture = textureLoader.load(
+  "/earth/earth/specularClouds.jpg"
+);
 // Mesh
 const earthGeometry = new THREE.SphereGeometry(2, 64, 64);
 const earthMaterial = new THREE.ShaderMaterial({
   vertexShader: vertexShader,
   fragmentShader,
-  uniforms: {},
+  uniforms: {
+    uDayTexture: new THREE.Uniform(earthDayTexture),
+    uNightTexture: new THREE.Uniform(earthNightTexture),
+    uSpecularCloudsTexture: new THREE.Uniform(earthSpecularCloudsTexture),
+  },
 });
 const earth = new THREE.Mesh(earthGeometry, earthMaterial);
 scene.add(earth);
@@ -105,4 +118,4 @@ const tick = () => {
   window.requestAnimationFrame(tick);
 };
 
-tick();
+export default tick;
