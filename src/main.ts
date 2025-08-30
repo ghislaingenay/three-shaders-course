@@ -4,4 +4,4 @@ function launch(file: string) {
   });
 }
 
-launch("earth");
+launch("particle_cursor");

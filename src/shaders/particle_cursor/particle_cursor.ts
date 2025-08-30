@@ -13,14 +13,13 @@ import fragmentShader from "./fragment.glsl";
 // Debug
 const gui = new GUI();
 
-// Loaders
-const textureLoader = new THREE.TextureLoader();
-
 // Scene
 const scene = new THREE.Scene();
 
 // Loaders
-const gltfLoader = new GLTFLoader();
+const textureLoader = new THREE.TextureLoader();
+
+const pictureTexture = textureLoader.load("/particle_cursor/picture-1.png");
 
 /**
  * Sizes
@@ -29,13 +28,29 @@ const sizes = {
   width: window.innerWidth,
   height: window.innerHeight,
   pixelRatio: Math.min(window.devicePixelRatio, 2),
+  resolution: new THREE.Vector2(),
 };
+
+sizes.resolution.set(
+  sizes.width * sizes.pixelRatio,
+  sizes.height * sizes.pixelRatio
+);
 
 window.addEventListener("resize", () => {
   // Update sizes
   sizes.width = window.innerWidth;
   sizes.height = window.innerHeight;
   sizes.pixelRatio = Math.min(window.devicePixelRatio, 2);
+  sizes.resolution.set(
+    sizes.width * sizes.pixelRatio,
+    sizes.height * sizes.pixelRatio
+  );
+
+  // Materials
+  particlesMaterial.uniforms.uResolution.value.set(
+    sizes.width * sizes.pixelRatio,
+    sizes.height * sizes.pixelRatio
+  );
 
   // Update camera
   camera.aspect = sizes.width / sizes.height;
@@ -51,14 +66,12 @@ window.addEventListener("resize", () => {
  */
 // Base camera
 const camera = new THREE.PerspectiveCamera(
-  25,
+  35,
   sizes.width / sizes.height,
   0.1,
   100
 );
-camera.position.x = 7;
-camera.position.y = 7;
-camera.position.z = 7;
+camera.position.set(0, 0, 18);
 scene.add(camera);
 
 // Controls
@@ -72,75 +85,30 @@ const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
   antialias: true,
 });
-// renderer.toneMapping = THREE.ACESFilmicToneMapping
-// renderer.toneMappingExposure = 3
+renderer.setClearColor("#181818");
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(sizes.pixelRatio);
 
 /**
- * Material
+ * Particles
  */
-const materialParameters = { color: "#ffffff" };
+const particlesGeometry = new THREE.PlaneGeometry(10, 10, 128, 128);
 
-const material = new THREE.ShaderMaterial({
+const particlesMaterial = new THREE.ShaderMaterial({
   vertexShader,
   fragmentShader,
   uniforms: {
-    uColor: new THREE.Uniform(new THREE.Color(materialParameters.color)),
+    uResolution: new THREE.Uniform(sizes.resolution),
+    uPictureTexture: new THREE.Uniform(pictureTexture),
   },
 });
-
-gui.addColor(materialParameters, "color").onChange(() => {
-  material.uniforms.uColor.value.set(materialParameters.color);
-});
-
-/**
- * Objects
- */
-// Torus knot
-const torusKnot = new THREE.Mesh(
-  new THREE.TorusKnotGeometry(0.6, 0.25, 128, 32),
-  material
-);
-torusKnot.position.x = 3;
-scene.add(torusKnot);
-
-// Sphere
-const sphere = new THREE.Mesh(new THREE.SphereGeometry(), material);
-sphere.position.x = -3;
-scene.add(sphere);
-
-// Suzanne
-let suzanne: THREE.Group;
-gltfLoader.load("/light_shaders/suzanne.glb", (gltf) => {
-  suzanne = gltf.scene;
-  suzanne.traverse((child) => {
-    const meshChild = child as THREE.Mesh;
-    if (meshChild.isMesh) meshChild.material = material;
-  });
-  scene.add(suzanne);
-});
+const particles = new THREE.Points(particlesGeometry, particlesMaterial);
+scene.add(particles);
 
 /**
  * Animate
  */
-const clock = new THREE.Clock();
-
 const tick = () => {
-  const elapsedTime = clock.getElapsedTime();
-
-  // Rotate objects
-  if (suzanne) {
-    suzanne.rotation.x = -elapsedTime * 0.1;
-    suzanne.rotation.y = elapsedTime * 0.2;
-  }
-
-  sphere.rotation.x = -elapsedTime * 0.1;
-  sphere.rotation.y = elapsedTime * 0.2;
-
-  torusKnot.rotation.x = -elapsedTime * 0.1;
-  torusKnot.rotation.y = elapsedTime * 0.2;
-
   // Update controls
   controls.update();
 
