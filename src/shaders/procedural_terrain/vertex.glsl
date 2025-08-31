@@ -89,7 +89,7 @@ void main()
     vec3 positionB = originalPos.xyz + vec3(0.0, 0.0, - shift);
 
     // Elevation
-    float elevation = getElevation(csm_Position.xz);
+    float elevation = getElevation(originalPos.xz);
      // Apply displacements consistently
     csm_Position = originalPos;
     csm_Position.y += elevation;
