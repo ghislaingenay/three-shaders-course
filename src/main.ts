@@ -4,4 +4,4 @@ function launch(file: string) {
   });
 }
 
-launch("wobbly_sphere");
+launch("sliced_model");
