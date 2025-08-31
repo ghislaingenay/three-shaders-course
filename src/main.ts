@@ -4,4 +4,4 @@ function launch(file: string) {
   });
 }
 
-launch("particle_morphing");
+launch("wobbly_sphere");
