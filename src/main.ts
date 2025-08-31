@@ -4,4 +4,4 @@ function launch(file: string) {
   });
 }
 
-launch("sliced_model");
+launch("procedural_terrain");
