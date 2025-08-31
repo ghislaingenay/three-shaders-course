@@ -6,8 +6,8 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import CustomShaderMaterial from "three-custom-shader-material/vanilla";
 import vertexShader from "./vertex.glsl";
 import fragmentShader from "./fragment.glsl";
-import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
-import { RGBELoader } from "three/examples/jsm/Addons.js";
+import { DRACOLoader, RGBELoader } from "three/examples/jsm/Addons.js";
+import { mergeVertices } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
 /**
  * Base
@@ -16,6 +16,8 @@ import { RGBELoader } from "three/examples/jsm/Addons.js";
 const gui = new GUI();
 const debugObject = {
   clearColor: "#160920",
+  colorA: "#0000ff",
+  colorB: "#ff0000",
 };
 
 // Loaders
@@ -27,7 +29,7 @@ const scene = new THREE.Scene();
 // Loaders
 const rgbeLoader = new RGBELoader();
 const dracoLoader = new DRACOLoader();
-dracoLoader.setDecoderPath("./draco/");
+dracoLoader.setDecoderPath("/src/draco/");
 const gltfLoader = new GLTFLoader();
 gltfLoader.setDRACOLoader(dracoLoader);
 
@@ -45,6 +47,18 @@ rgbeLoader.load("/wobbly_sphere/urban_alley_01_1k.hdr", (environmentMap) => {
  * Wobble
  */
 // Material
+const uniforms = {
+  uTime: new THREE.Uniform(0),
+  uPositionFrequency: new THREE.Uniform(0.5),
+  uTimeFrequency: new THREE.Uniform(0.4),
+  uStrength: new THREE.Uniform(0.3),
+  uWarpPositionFrequency: new THREE.Uniform(0.38),
+  uWarpTimeFrequency: new THREE.Uniform(0.12),
+  uWarpStrength: new THREE.Uniform(1.7),
+  uColorA: new THREE.Uniform(new THREE.Color(debugObject.colorA)),
+  uColorB: new THREE.Uniform(new THREE.Color(debugObject.colorB)),
+};
+
 const material = new CustomShaderMaterial<typeof THREE.MeshPhysicalMaterial>({
   baseMaterial: THREE.MeshPhysicalMaterial,
   // MeshPhysicalMaterial
@@ -58,24 +72,59 @@ const material = new CustomShaderMaterial<typeof THREE.MeshPhysicalMaterial>({
   thickness: 1.5,
   transparent: true,
   wireframe: false,
+  uniforms,
+});
+const depthMaterial = new CustomShaderMaterial<typeof THREE.MeshDepthMaterial>({
+  baseMaterial: THREE.MeshDepthMaterial,
+  // MeshPhysicalMaterial
+  vertexShader,
+  uniforms,
+  // fragmentShader,
+  // encode the depth in all 4 channels instead of grayscale depth to improve the precision
+  depthPacking: THREE.RGBADepthPacking,
 });
 
 // Tweaks
-// gui.add(material, "metalness", 0, 1, 0.001);
-// gui.add(material, "roughness", 0, 1, 0.001);
-// gui.add(material, "transmission", 0, 1, 0.001);
-// gui.add(material, "ior", 0, 10, 0.001);
-// gui.add(material, "thickness", 0, 10, 0.001);
-// <typeof THREE.MeshPhysicalMaterial>gui.addColor(material, "color");
-
+gui
+  .add(uniforms.uPositionFrequency, "value", 0, 2, 0.001)
+  .name("uPositionFrequency");
+gui.add(uniforms.uTimeFrequency, "value", 0, 2, 0.001).name("uTimeFrequency");
+gui.add(uniforms.uStrength, "value", 0, 2, 0.001).name("uStrength");
+gui
+  .add(uniforms.uWarpPositionFrequency, "value", 0, 2, 0.001)
+  .name("uWarpPositionFrequency");
+gui
+  .add(uniforms.uWarpTimeFrequency, "value", 0, 2, 0.001)
+  .name("uWarpTimeFrequency");
+gui.add(uniforms.uWarpStrength, "value", 0, 2, 0.001).name("uWarpStrength");
+gui
+  .addColor(debugObject, "colorA")
+  .onChange(() => uniforms.uColorA.value.set(debugObject.colorA));
+gui
+  .addColor(debugObject, "colorB")
+  .onChange(() => uniforms.uColorB.value.set(debugObject.colorB));
 // Geometry
-const geometry = new THREE.IcosahedronGeometry(2.5, 50);
+// let geometry = new THREE.IcosahedronGeometry(2.5, 50) as THREE.BufferGeometry;
+// // merged vertices to get idnexed geometry
+// geometry = mergeVertices(geometry);
+// geometry.computeTangents();
+// // Mesh
+// const wobble = new THREE.Mesh(geometry, material);
+// wobble.customDepthMaterial = depthMaterial;
+// wobble.receiveShadow = true;
+// wobble.castShadow = true;
+// scene.add(wobble);
 
-// Mesh
-const wobble = new THREE.Mesh(geometry, material);
-wobble.receiveShadow = true;
-wobble.castShadow = true;
-scene.add(wobble);
+// Model
+gltfLoader.load("/wobbly_sphere/suzanne.glb", (gltf) => {
+  console.log("gltf", gltf);
+  const wobble = gltf.scene.children[0] as unknown as THREE.Mesh;
+  wobble.receiveShadow = true;
+  wobble.castShadow = true;
+  wobble.material = material;
+  wobble.customDepthMaterial = depthMaterial;
+  scene.add(wobble);
+});
 
 /**
  * Plane
@@ -166,6 +215,9 @@ const tick = () => {
 
   // Update controls
   controls.update();
+
+  // Materials
+  uniforms.uTime.value = elapsedTime;
 
   // Render
   renderer.render(scene, camera);
